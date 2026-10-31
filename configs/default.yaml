@@ -8,6 +8,9 @@ paths:
   output_dir: outputs
   cache_dir: outputs/cache
   catalog_db: outputs/catalog.sqlite
+  storage_root: data          # catalog file keys are relative to this directory
+privacy:
+  deidentify: true            # shift dates / strip identifiers on BIDS conversion
 preprocess:
   l_freq: 1.0
   h_freq: 40.0

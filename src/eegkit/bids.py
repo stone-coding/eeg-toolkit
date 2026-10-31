@@ -8,6 +8,7 @@ from pathlib import Path
 import mne
 from mne_bids import BIDSPath, read_raw_bids, write_raw_bids
 
+from eegkit.deidentify import deidentify_raw, get_salt
 from eegkit.io import load_run
 from eegkit.logging import get_logger
 
@@ -39,9 +40,12 @@ def to_bids(
     raw_dir: str | Path,
     bids_root: str | Path,
     overwrite: bool = False,
+    deidentify: bool = True,
 ) -> list[BIDSPath]:
     """Convert downloaded EEGBCI EDFs to a BIDS dataset. Existing files are kept unless
-    ``overwrite``. Returns the BIDS paths of all runs."""
+    ``overwrite``. With ``deidentify`` (default) dates are shifted and identifiers stripped
+    before writing. Returns the BIDS paths of all runs."""
+    salt = get_salt() if deidentify else None
     out: list[BIDSPath] = []
     for sub in subjects:
         for run in runs:
@@ -50,25 +54,17 @@ def to_bids(
             if bp.fpath.exists() and not overwrite:
                 log.info("bids run exists, skipping", extra={"subject": sub, "run": run})
                 continue
-            raw = load_run(sub, run, raw_dir)
-            raw.annotations.rename(RENAME)
-            raw.info["line_freq"] = 60  # recorded in the US
-            write_raw_bids(
-                raw,
-                bp,
-                event_id=EVENT_ID,
-                format="EDF",
-                allow_preload=True,
-                overwrite=True,
-                verbose="ERROR",
-            )
+            write_run_bids(load_run(sub, run, raw_dir), bp, salt)
             log.info("wrote bids run", extra={"subject": sub, "run": run, "path": str(bp.fpath)})
     return out
 
 
-def write_run_bids(raw: mne.io.BaseRaw, bp: BIDSPath) -> None:
-    """Write one recording (T0/T1/T2 or rest/left/right annotations) as BIDS EDF."""
-    raw = raw.copy()
+def write_run_bids(raw: mne.io.BaseRaw, bp: BIDSPath, deid_salt: str | None = None) -> None:
+    """Write one recording (T0/T1/T2 or rest/left/right annotations) as BIDS EDF.
+
+    If ``deid_salt`` is given the recording is de-identified first (see ``eegkit.deidentify``).
+    """
+    raw = deidentify_raw(raw, f"sub-{bp.subject}", deid_salt) if deid_salt else raw.copy()
     raw.annotations.rename(
         {k: v for k, v in RENAME.items() if k in set(raw.annotations.description)}
     )

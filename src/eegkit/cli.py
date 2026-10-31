@@ -71,7 +71,14 @@ def to_bids_cmd(
     from eegkit.bids import to_bids
 
     cfg = _cfg(config, subjects)
-    paths = to_bids(cfg.subjects, cfg.runs, cfg.paths.raw_dir, cfg.paths.bids_root, overwrite)
+    paths = to_bids(
+        cfg.subjects,
+        cfg.runs,
+        cfg.paths.raw_dir,
+        cfg.paths.bids_root,
+        overwrite,
+        cfg.privacy.deidentify,
+    )
     typer.echo(f"BIDS dataset at {cfg.paths.bids_root} ({len(paths)} runs)")
 
 
@@ -118,6 +125,58 @@ def report(
         typer.secho(str(exc), fg=typer.colors.RED, err=True)
         raise typer.Exit(1) from exc
     typer.echo(f"Report written to {path}")
+
+
+@app.command()
+def index(config: ConfigOpt = None) -> None:
+    """Build/refresh the metadata catalog from the BIDS dataset and pipeline outputs."""
+    from eegkit.catalog import Catalog
+    from eegkit.storage import LocalStorage
+
+    cfg = _cfg(config)
+    storage = LocalStorage(cfg.paths.storage_root)
+    catalog = Catalog(cfg.paths.catalog_db)
+    n_runs = catalog.index_bids(cfg.paths.bids_root, storage)
+    n_status = catalog.sync_status(cfg.paths.output_dir)
+    n_art = catalog.publish_artifacts(cfg, storage)
+    typer.echo(
+        f"Indexed {n_runs} runs, {n_status} subject statuses, {n_art} result files "
+        f"-> {cfg.paths.catalog_db}"
+    )
+
+
+@app.command()
+def serve(
+    config: ConfigOpt = None,
+    host: Annotated[str, typer.Option(help="Bind address.")] = "127.0.0.1",
+    port: Annotated[int, typer.Option(help="Port.")] = 8000,
+) -> None:
+    """Serve the REST API (OpenAPI docs at /docs)."""
+    import uvicorn
+
+    from eegkit.api import create_app
+    from eegkit.catalog import Catalog
+    from eegkit.storage import LocalStorage
+
+    cfg = _cfg(config)
+    app_ = create_app(Catalog(cfg.paths.catalog_db), LocalStorage(cfg.paths.storage_root))
+    uvicorn.run(app_, host=host, port=port, log_level=cfg.log_level.lower())
+
+
+@app.command()
+def deidentify(
+    src: Annotated[Path, typer.Argument(help="Input recording (.fif/.edf).")],
+    dest: Annotated[Path, typer.Argument(help="Output .fif file.")],
+    subject_label: Annotated[str, typer.Option("--label", help="Subject label, e.g. sub-001.")],
+) -> None:
+    """De-identify a recording: strip identifiers and shift dates (demonstration utility)."""
+    import mne
+
+    from eegkit.deidentify import deidentify_raw
+
+    raw = mne.io.read_raw(src, preload=True, verbose="ERROR")
+    deidentify_raw(raw, subject_label).save(dest, overwrite=True, verbose="ERROR")
+    typer.echo(f"Wrote de-identified recording to {dest}")
 
 
 if __name__ == "__main__":  # pragma: no cover

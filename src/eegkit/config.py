@@ -41,6 +41,11 @@ class PathsConfig(_Model):
     output_dir: Path = Path("outputs")
     cache_dir: Path = Path("outputs/cache")
     catalog_db: Path = Path("outputs/catalog.sqlite")
+    storage_root: Path = Path("data")  # keys in the catalog are relative to this
+
+
+class PrivacyConfig(_Model):
+    deidentify: bool = True  # de-identify recordings when converting to BIDS
 
 
 class PreprocessConfig(_Model):
@@ -107,6 +112,7 @@ class Config(_Model):
     subjects: list[int] = list(range(1, 11))
     runs: list[int] = [4, 8, 12]
     paths: PathsConfig = PathsConfig()
+    privacy: PrivacyConfig = PrivacyConfig()
     preprocess: PreprocessConfig = PreprocessConfig()
     epochs: EpochConfig = EpochConfig()
     analysis: AnalysisConfig = AnalysisConfig()
