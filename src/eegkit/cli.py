@@ -179,5 +179,37 @@ def deidentify(
     typer.echo(f"Wrote de-identified recording to {dest}")
 
 
+@app.command("app")
+def gui(
+    config: ConfigOpt = None,
+    port: Annotated[int, typer.Option(help="Port.")] = 8501,
+    headless: Annotated[bool, typer.Option(help="Don't open a browser.")] = False,
+) -> None:
+    """Launch the Streamlit GUI (Explorer + Live monitor)."""
+    import os
+    import subprocess
+    import sys
+
+    from eegkit.gui import app as gui_app
+
+    env = dict(os.environ)
+    if config:
+        env["EEGKIT_CONFIG"] = str(config)
+    cmd = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(gui_app.__file__),
+        "--server.port",
+        str(port),
+        "--server.headless",
+        str(headless).lower(),
+        "--browser.gatherUsageStats",
+        "false",
+    ]
+    raise typer.Exit(subprocess.call(cmd, env=env))
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()

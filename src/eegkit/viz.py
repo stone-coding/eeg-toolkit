@@ -220,3 +220,65 @@ def plot_decoding_accuracy(df: pd.DataFrame, title: str | None = None) -> Figure
         ax.set_title(title)
     fig.tight_layout()
     return fig
+
+
+def plot_traces(
+    data: np.ndarray,
+    times: np.ndarray,
+    ch_names: list[str],
+    scale_uv: float = 100.0,
+    markers: list[tuple[float, str]] | None = None,
+    title: str | None = None,
+) -> Figure:
+    """Stacked EEG traces (``data`` in volts, one row per channel) with event markers."""
+    fig, ax = plt.subplots(figsize=(10, 0.55 * len(ch_names) + 1.2))
+    step = scale_uv * 1e-6
+    for i in range(len(ch_names)):
+        y = data[i] - data[i].mean()
+        ax.plot(times, y + (len(ch_names) - 1 - i) * step, color=INK, lw=0.7)
+    ax.set_yticks([(len(ch_names) - 1 - i) * step for i in range(len(ch_names))], ch_names)
+    ax.set_ylim(-step, len(ch_names) * step)
+    ax.set_xlim(times[0], times[-1])
+    seen: set[str] = set()
+    for t, lab in markers or []:
+        if times[0] <= t <= times[-1]:
+            ax.axvline(
+                t, color=COLORS.get(lab, MUTED), lw=1.5, ls="--", label=None if lab in seen else lab
+            )
+            seen.add(lab)
+    if seen:
+        ax.legend(frameon=False, loc="upper right", ncol=len(seen))
+    ax.set(xlabel="Time (s)")
+    ax.text(1.005, 0.02, f"{scale_uv:g} µV", transform=ax.transAxes, fontsize=8, color=MUTED)
+    ax.spines["left"].set_visible(False)
+    ax.tick_params(left=False)
+    if title:
+        ax.set_title(title)
+    fig.tight_layout()
+    return fig
+
+
+CHANNEL_COLORS = ("#009E73", "#CC79A7", "#E69F00", "#56B4E9")  # Okabe-Ito, distinct from L/R
+
+
+def plot_band_bars(
+    powers: dict[str, dict[str, float]], title: str | None = None, ymax_uv2: float | None = None
+) -> Figure:
+    """Grouped bars of band power (µV²): one group per band, one bar per channel."""
+    chans = list(powers)
+    bands = list(next(iter(powers.values())))
+    fig, ax = plt.subplots(figsize=(4.2, 3.2))
+    w = 0.8 / len(chans)
+    for i, ch in enumerate(chans):
+        vals = [powers[ch][b] * 1e12 for b in bands]
+        xs = np.arange(len(bands)) + (i - (len(chans) - 1) / 2) * w
+        ax.bar(xs, vals, width=w * 0.9, color=CHANNEL_COLORS[i % 4], label=ch)
+    ax.set_xticks(np.arange(len(bands)), bands)
+    ax.set(ylabel="Band power (µV²)")
+    if ymax_uv2:
+        ax.set_ylim(0, ymax_uv2)
+    ax.legend(frameon=False)
+    if title:
+        ax.set_title(title)
+    fig.tight_layout()
+    return fig

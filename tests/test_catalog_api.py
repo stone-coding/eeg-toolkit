@@ -43,6 +43,8 @@ def lab(tmp_path_factory):
         "1,left,C3,mu,1e-10\n1,right,C3,mu,5e-11\n1,left,C4,beta,2e-11\n"
     )
     (out / "sub-001/decoding.json").write_text("{}")
+    (cache / "erders.npz").write_bytes(b"npz")
+    (cache / "psd.npz").write_bytes(b"npz")
     (out / "sub-001/erders_summary.csv").write_text("subject\n1\n")
     (out / "sub-001/status.json").write_text(
         json.dumps(
@@ -157,7 +159,7 @@ def test_api_subjects_and_status(client):
     assert client.get("/subjects/sub-003/status").json()["status"] == "unprocessed"
     assert client.get("/subjects/sub-999/status").status_code == 404
     kinds = {a["kind"] for a in client.get("/subjects/sub-001").json()["artifacts"]}
-    assert kinds == {"epochs", "bandpower", "erders", "decoding"}
+    assert kinds == {"epochs", "bandpower", "erders", "decoding", "erders_maps", "psd"}
 
 
 def test_api_bandpower(client):

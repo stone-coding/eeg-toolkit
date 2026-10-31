@@ -131,6 +131,8 @@ ARTIFACT_FILES = {
     "bandpower": ("subjects", "bandpower.csv"),
     "erders": ("subjects", "erders_summary.csv"),
     "decoding": ("subjects", "decoding.json"),
+    "erders_maps": ("cache", "erders.npz"),
+    "psd": ("cache", "psd.npz"),
 }
 
 
