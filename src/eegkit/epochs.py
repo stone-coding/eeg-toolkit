@@ -12,7 +12,8 @@ from eegkit.logging import get_logger
 log = get_logger(__name__)
 
 # EEGBCI runs 4/8/12: T0 = rest, T1 = left fist imagery, T2 = right fist imagery
-ANNOTATION_MAP = {"T1": 1, "T2": 2}
+# BIDS-converted data uses the descriptive names instead of the raw T-codes.
+ANNOTATION_MAP = {"T1": 1, "T2": 2, "left": 1, "right": 2}
 EVENT_ID = {"left": 1, "right": 2}
 
 

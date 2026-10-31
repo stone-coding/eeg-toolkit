@@ -11,6 +11,8 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "stone-coding" }]
 dependencies = [
+  "tabulate>=0.9",
+  "edfio>=0.4",
   "numpy>=1.26,<3",
   "scipy>=1.11,<2",
   "pandas>=2.1,<4",

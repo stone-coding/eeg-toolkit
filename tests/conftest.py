@@ -43,7 +43,9 @@ def make_synthetic_raw(
         descs += [lab, "T0"]
         durs += [task, rest]
         cur += task + rest
-    data += mu_amp_uv * env * np.sin(2 * np.pi * 10 * t)
+    # independent phase per channel (a phase-locked sine would vanish under average reference)
+    phase = rng.uniform(0, 2 * np.pi, (len(CH_NAMES), 1))
+    data += mu_amp_uv * env * np.sin(2 * np.pi * 10 * t + phase)
     info = mne.create_info(CH_NAMES, SFREQ, "eeg")
     raw = mne.io.RawArray(data * 1e-6, info, verbose="ERROR")
     raw.set_annotations(mne.Annotations(onsets, durs, descs))

@@ -194,10 +194,26 @@ def plot_decoding_accuracy(df: pd.DataFrame, title: str | None = None) -> Figure
         x, df["accuracy"], color="#0072B2", width=0.6, yerr=df.get("std"), capsize=3, ecolor=MUTED
     )
     ax.axhline(0.5, color=INK, lw=1, ls="--")
-    ax.text(len(df) - 0.5, 0.51, "chance", ha="right", va="bottom", color=MUTED, fontsize=9)
+    ax.annotate(
+        "chance",
+        (1.01, 0.5),
+        xycoords=("axes fraction", "data"),
+        va="center",
+        color=MUTED,
+        fontsize=9,
+        annotation_clip=False,
+    )
     mean = float(df["accuracy"].mean())
     ax.axhline(mean, color="#D55E00", lw=1.5)
-    ax.text(-0.45, mean + 0.015, f"mean {mean:.2f}", color="#D55E00", fontsize=9, va="bottom")
+    ax.annotate(
+        f"mean {mean:.2f}",
+        (1.01, mean),
+        xycoords=("axes fraction", "data"),
+        va="center",
+        color="#D55E00",
+        fontsize=9,
+        annotation_clip=False,
+    )
     ax.set_xticks(x, [f"S{int(s)}" for s in df["subject"]])
     ax.set(ylabel="CV accuracy", ylim=(0, 1.05), xlabel="Subject")
     if title:
