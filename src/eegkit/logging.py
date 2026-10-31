@@ -33,11 +33,26 @@ class StructuredFormatter(logging.Formatter):
         return f"{line} {kv}".rstrip()
 
 
+class _StderrHandler(logging.StreamHandler):  # type: ignore[type-arg,unused-ignore]
+    """Writes to whatever ``sys.stderr`` is *at emit time* (survives stream swaps/closing)."""
+
+    def __init__(self) -> None:
+        logging.Handler.__init__(self)
+
+    @property
+    def stream(self):  # type: ignore[no-untyped-def,unused-ignore]
+        return sys.stderr
+
+    @stream.setter
+    def stream(self, _value: object) -> None:
+        pass
+
+
 def configure_logging(level: str = "INFO", as_json: bool = False) -> None:
     """Install a single structured stderr handler on the ``eegkit`` logger."""
     logger = logging.getLogger("eegkit")
     logger.handlers.clear()
-    handler = logging.StreamHandler(sys.stderr)
+    handler = _StderrHandler()
     handler.setFormatter(StructuredFormatter(as_json))
     logger.addHandler(handler)
     logger.setLevel(level.upper())

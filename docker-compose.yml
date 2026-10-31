@@ -1,0 +1,38 @@
+# docker compose up --build
+#   API (OpenAPI docs)  http://localhost:8000/docs
+#   Streamlit GUI       http://localhost:8501
+#
+# Prepare data on the host first (or run the same commands in a container):
+#   eegkit download && eegkit to-bids && eegkit run && eegkit index
+# Without data the GUI's Live monitor still works with its synthetic demo signal.
+x-eegkit: &eegkit
+  build: .
+  image: eeg-toolkit:latest
+  volumes:
+    - ./data:/app/data
+    - ./outputs:/app/outputs
+  environment:
+    EEGKIT_CONFIG: /app/configs/default.yaml
+    EEGKIT_DEID_SALT: ${EEGKIT_DEID_SALT:-}
+  restart: unless-stopped
+
+services:
+  api:
+    <<: *eegkit
+    command: ["eegkit", "serve", "-c", "configs/default.yaml", "--host", "0.0.0.0", "--port", "8000"]
+    ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  gui:
+    <<: *eegkit
+    command: ["eegkit", "app", "-c", "configs/default.yaml", "--headless", "--port", "8501"]
+    ports: ["8501:8501"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8501/_stcore/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5

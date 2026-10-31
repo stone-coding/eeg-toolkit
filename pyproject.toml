@@ -50,7 +50,7 @@ filterwarnings = ["ignore::DeprecationWarning", "ignore::RuntimeWarning:mne.*"]
 
 [tool.coverage.run]
 source = ["eegkit"]
-omit = ["src/eegkit/gui/*", "src/eegkit/cli.py"]
+omit = ["src/eegkit/gui/*"]
 
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]
@@ -58,9 +58,14 @@ exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedE
 [tool.ruff]
 line-length = 100
 src = ["src", "tests"]
+extend-exclude = ["docs/*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "NPY"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E501"]
+"tests/*" = ["E501"]
 
 [tool.mypy]
 python_version = "3.10"

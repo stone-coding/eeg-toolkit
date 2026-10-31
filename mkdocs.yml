@@ -1,0 +1,57 @@
+site_name: eeg-toolkit
+site_description: Toolkit for managing, accessing and analyzing human EEG data
+site_url: https://stone-coding.github.io/eeg-toolkit/
+repo_url: https://github.com/stone-coding/eeg-toolkit
+repo_name: stone-coding/eeg-toolkit
+theme:
+  name: material
+  features: [navigation.sections, navigation.top, content.code.copy, toc.follow]
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      toggle: { icon: material/weather-sunny, name: Light mode }
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - User guide:
+      - Configuration: user-guide/configuration.md
+      - "Data (download, to-bids)": user-guide/data.md
+      - "Analysis (run, report)": user-guide/analysis.md
+      - "Catalog and API (index, serve)": user-guide/access.md
+      - "GUI (app)": user-guide/gui.md
+      - Real-time simulation: user-guide/realtime.md
+  - Tutorial: tutorial.ipynb
+  - Architecture: architecture.md
+  - Privacy: privacy.md
+  - API reference: reference.md
+plugins:
+  - search
+  - mkdocs-jupyter:
+      execute: false
+      include_source: true
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_source: false
+            docstring_style: google
+            members_order: source
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc: { permalink: true }
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+exclude_docs: |
+  eeg-toolkit-demo.pptx

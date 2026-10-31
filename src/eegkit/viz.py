@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import matplotlib
 
-matplotlib.use("Agg", force=False)
+# headless-safe default, but leave Jupyter's inline backend alone
+if "inline" not in matplotlib.get_backend().lower():
+    matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt  # noqa: E402
 import mne  # noqa: E402
