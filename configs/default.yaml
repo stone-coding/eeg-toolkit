@@ -1,0 +1,30 @@
+# eegkit default configuration (every key is optional; these are the defaults)
+subjects: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+runs: [4, 8, 12]            # motor imagery, left vs right fist
+log_level: INFO
+paths:
+  raw_dir: data/raw
+  bids_root: data/bids
+  output_dir: outputs
+  cache_dir: outputs/cache
+  catalog_db: outputs/catalog.sqlite
+preprocess:
+  l_freq: 1.0
+  h_freq: 40.0
+  notch_freqs: [60.0]
+  flat_std_v: 1.0e-7
+  noisy_z: 4.0
+  interpolate_bads: true
+epochs:
+  tmin: -1.5
+  tmax: 4.5
+  baseline: [-1.5, 0.0]
+  reject_uv: 300.0   # on the sensorimotor ROI (reject_channels)
+analysis:
+  bands: {mu: [8.0, 13.0], beta: [13.0, 30.0]}
+  band_window: [0.5, 3.5]
+  erders_channels: [C3, C4]
+  erders_freqs: [6.0, 30.0]
+  erders_baseline: [-1.0, 0.0]
+  erders_crop: [-1.0, 4.0]
+  decoding: {tmin: 0.5, tmax: 2.5, fmin: 8.0, fmax: 30.0, n_components: 4, n_splits: 5, seed: 42}
